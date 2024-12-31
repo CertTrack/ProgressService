@@ -18,7 +18,8 @@ import jakarta.persistence.TemporalType;
 @Table(name = "progress")
 public class Progress {
 
-    @Id
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -39,6 +40,7 @@ public class Progress {
     @PrePersist
     protected void onUpdate() {
         this.lastUpdated = new Date();
+        System.out.println("onUpdate");
     }
 
 	public Long getId() {
@@ -91,4 +93,9 @@ public class Progress {
 	}
 
 	public Progress() {	}
+	@Override
+	public String toString() {
+		return "Progress [id=" + id + ", userId=" + userId + ", courseId=" + courseId + ", progressPercentage="
+				+ progressPercentage + ", lastUpdated=" + lastUpdated + "]";
+	}
 }

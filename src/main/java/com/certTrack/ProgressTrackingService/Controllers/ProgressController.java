@@ -30,7 +30,7 @@ public class ProgressController {
     public ResponseEntity<String> updateProgress(
             @RequestParam Long userId,
             @RequestParam Long courseId,
-            @RequestParam Double progressPercentage){
+            @RequestParam int progressPercentage){
         progressService.updateProgress(userId, courseId, progressPercentage);
         return ResponseEntity.ok("Progress updated successfully.");
     }
