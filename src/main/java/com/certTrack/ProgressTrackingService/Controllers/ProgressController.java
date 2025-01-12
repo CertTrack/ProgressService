@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.certTrack.ProgressTrackingService.DTO.ResponseMessage;
 import com.certTrack.ProgressTrackingService.Entity.Progress;
 import com.certTrack.ProgressTrackingService.Service.ProgressService;
 
@@ -26,16 +27,16 @@ public class ProgressController {
     
     
     
-    @PutMapping("/")
-    public ResponseEntity<String> updateProgress(
+    @PutMapping("/update")
+    public ResponseEntity<ResponseMessage> updateProgress(
             @RequestParam Long userId,
             @RequestParam Long courseId,
             @RequestParam int progressPercentage){
         progressService.updateProgress(userId, courseId, progressPercentage);
-        return ResponseEntity.ok("Progress updated successfully.");
+        return ResponseEntity.ok(new ResponseMessage("Progress updated successfully."));
     }
 
-    @GetMapping("/")
+    @GetMapping("/get")
     public Progress getProgress(
             @RequestParam Long userId,
             @RequestParam Long courseId) {
@@ -51,11 +52,10 @@ public class ProgressController {
 
     
     
-    @DeleteMapping("/")
-    public ResponseEntity<String> clearProgressByUserIdAndCourseId(
+    @DeleteMapping("/delete")
+    public ResponseEntity<ResponseMessage> clearProgressByUserIdAndCourseId(
             @RequestParam Long userId,
             @RequestParam Long courseId) {
-        progressService.deleteProgress(userId, courseId);
-        return ResponseEntity.ok("Progress successfully deleted.");
+    	return progressService.deleteProgress(userId, courseId);
     }
 }

@@ -1,7 +1,9 @@
 package com.certTrack.ProgressTrackingService.Service;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,7 +61,6 @@ public class ProgressService {
 	        }		
 	    }
 		progress.setProgressPercentage(percentage);
-		progress.setLastUpdated(new Date());
 		progressRepository.save(progress);
 	}
 
@@ -68,7 +69,7 @@ public class ProgressService {
 		progress.setUserId(userId);
 		progress.setCourseId(courseId);
 		progress.setProgressPercentage(0.0);
-		progress.setLastUpdated(new Date());
+		//progress.setLastUpdated(new Date().toString());
 		return progress;
 	}
 
@@ -81,8 +82,12 @@ public class ProgressService {
 		return progress;
 	}
 
-	public void deleteProgress(Long userId, Long courseId) {
-		Progress progress = progressRepository.findByUserIdAndCourseId(userId, courseId).orElse(null);
-		progressRepository.delete(progress);
+	public ResponseEntity<ResponseMessage> deleteProgress(Long userId, Long courseId) {
+		Optional<Progress> progress = progressRepository.findByUserIdAndCourseId(userId, courseId);
+		if(progress.isPresent()) {
+			progressRepository.delete(progress.get());
+			return ResponseEntity.ok(new ResponseMessage("succesfully deleted progress"));
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage("no progress by that id"));
 	}
 }

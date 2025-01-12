@@ -1,6 +1,11 @@
 package com.certTrack.ProgressTrackingService.Entity;
 
+import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +24,7 @@ import jakarta.persistence.TemporalType;
 public class Progress {
 
 
+	@JsonIgnore
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,13 +40,15 @@ public class Progress {
 
     @Column(name = "last_updated", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date lastUpdated;
+    private String lastUpdated;
 
     @PreUpdate
     @PrePersist
-    protected void onUpdate() {
-        this.lastUpdated = new Date();
-        System.out.println("onUpdate");
+    public void onUpdate() throws ParseException {
+    	LocalDateTime dateTime = LocalDateTime.now();
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    	System.out.println("on update "+ dateTime.format(formatter));
+    	this.lastUpdated = dateTime.format(formatter); 
     }
 
 	public Long getId() {
@@ -75,17 +83,15 @@ public class Progress {
 		this.progressPercentage = progressPercentage;
 	}
 
-	public Date getLastUpdated() {
+	public String getLastUpdated() {
 		return lastUpdated;
 	}
 
-	public void setLastUpdated(Date lastUpdated) {
+	public void setLastUpdated(String lastUpdated) {
 		this.lastUpdated = lastUpdated;
 	}
 
-	public Progress(Long id, Long userId, Long courseId, Double progressPercentage, Date lastUpdated) {
-		super();
-		this.id = id;
+	public Progress(Long userId, Long courseId, Double progressPercentage, String lastUpdated) {
 		this.userId = userId;
 		this.courseId = courseId;
 		this.progressPercentage = progressPercentage;
