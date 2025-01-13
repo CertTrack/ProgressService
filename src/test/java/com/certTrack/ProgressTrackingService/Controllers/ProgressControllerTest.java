@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.hibernate.annotations.NotFound;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -39,14 +38,18 @@ class ProgressControllerTest {
 	@Autowired
 	ObjectMapper objectMapper;
 	
+	LocalDateTime dateTime = LocalDateTime.now();
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+	String lastUpdated = dateTime.format(formatter); 
+
+	
 	@Test
 	@Order(1)
 	public void NotAuthorizedUserCanNotSeeAnyEndpoint() throws Exception {
-		api.perform(put("/progress/update?userId=16&courseId=7&progressPercentage=1")).andExpect(status().is4xxClientError());
+		api.perform(put("/progress/update?userId=1&courseId=7&progressPercentage=1")).andExpect(status().is4xxClientError());
 		api.perform(get("/progress/get?userId=16&courseId=7")).andExpect(status().is4xxClientError());
 		api.perform(get("/progress/all?userId=16")).andExpect(status().is4xxClientError());
 		api.perform(delete("/progress/delete?userId=16&courseId=7")).andExpect(status().is4xxClientError());
-		System.out.println("NotAuthorizedUserCanNotSeeAnyEndpoint");
 	}
 	
 	
@@ -56,8 +59,7 @@ class ProgressControllerTest {
 	public void AuthorizedCanUpdateProgresslol() throws Exception {
 		ResponseEntity<ResponseMessage> response = ResponseEntity.ok(new ResponseMessage("Progress updated successfully."));
 		String responseObject = objectMapper.writeValueAsString(response.getBody());
-		System.out.println("AuthorizedCanUpdateProgress");
-		api.perform(put("/progress/update?userId=16&courseId=6&progressPercentage=2")
+		api.perform(put("/progress/update?userId=1&courseId=6&progressPercentage=2")
 			.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(content().json(responseObject));
@@ -69,15 +71,11 @@ class ProgressControllerTest {
 	public void AuthorizedCanUpdateProgress() throws Exception {
 		ResponseEntity<ResponseMessage> response = ResponseEntity.ok(new ResponseMessage("Progress updated successfully."));
 		String responseObject = objectMapper.writeValueAsString(response.getBody());
-		System.out.println("AuthorizedCanUpdateProgress");
-		api.perform(put("/progress/update?userId=16&courseId=7&progressPercentage=2")
+		api.perform(put("/progress/update?userId=1&courseId=7&progressPercentage=10")
 			.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(content().json(responseObject));
 	}
-	LocalDateTime dateTime = LocalDateTime.now();
-	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-	String lastUpdated = dateTime.format(formatter); 
 	
 	
 	
@@ -86,10 +84,9 @@ class ProgressControllerTest {
 	@Order(4)
 	public void AuthorizedCanSeeProgress() throws Exception {
 		
-		Progress progress = new Progress(16L, 7L, 20.0, lastUpdated);
+		Progress progress = new Progress(1L, 7L, 100.0, lastUpdated);
 		String responseObject = objectMapper.writeValueAsString(progress);
-		System.out.println("AuthorizedCanSeeProgress from test "+lastUpdated);
-		api.perform(get("/progress/get?userId=16&courseId=7")
+		api.perform(get("/progress/get?userId=1&courseId=7")
 			.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(content().json(responseObject));
@@ -100,11 +97,10 @@ class ProgressControllerTest {
 	@Order(5)
 	public void AuthorizedCanSeeProgressOfAllCourses() throws Exception {
 		List<Progress> progress = List.of(
-				new Progress(16L, 6L, 20.0, lastUpdated),
-				new Progress(16L, 7L, 20.0, lastUpdated));
+				new Progress(1L, 6L, 20.0, lastUpdated),
+				new Progress(1L, 7L, 100.0, lastUpdated));
 		String responseObject = objectMapper.writeValueAsString(progress);
-		System.out.println("AuthorizedCanUpdateProgress");
-		api.perform(get("/progress/all?userId=16")
+		api.perform(get("/progress/all?userId=1")
 			.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(content().json(responseObject));

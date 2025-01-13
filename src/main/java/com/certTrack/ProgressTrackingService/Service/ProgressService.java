@@ -1,7 +1,5 @@
 package com.certTrack.ProgressTrackingService.Service;
 
-import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,6 +14,10 @@ import com.certTrack.ProgressTrackingService.DTO.ResponseMessage;
 import com.certTrack.ProgressTrackingService.Entity.Progress;
 import com.certTrack.ProgressTrackingService.Repository.ProgressRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 @Service
 public class ProgressService {
 
@@ -36,12 +37,17 @@ public class ProgressService {
 		String query = "SELECT module FROM course WHERE id = ?"; 
 		int modules = jdbcTemplate.queryForObject(query, Integer.class, courseId);
 		double percentage = (progressPercentage / (double) modules) * 100;
+		if(progress.getProgressPercentage()>=percentage) {
+			return;
+		}
 		if(percentage == 100) {
-	        String url = "http://localhost:8085/?userId={userId}&message={message}&subject={subject}";
-	        String message = "Hello, this is a test message!";
-	        String subject = "Test Subject";
+	        String url = "http://localhost:8085/notification/send?userId={userId}&message={message}&subject={subject}";
+	        String courseName = jdbcTemplate.queryForObject("SELECT name FROM course WHERE id = ?", String.class, courseId);
+	        String message = 
+	        		"Hello, we congratulate you on completing the course "+
+	        		courseName+"!\n"+"You will receive your certificate shortly!";
+	        String subject = "Completion of the "+courseName+" course";
 	        try {
-	            // Відправка GET-запиту
 	            ResponseEntity<ResponseMessage> response = restTemplate.getForEntity(
 	                    url,
 	                    ResponseMessage.class,
@@ -50,14 +56,13 @@ public class ProgressService {
 	                    subject
 	            );
 	            
-	            // Перевірка статусу відповіді
 	            if (response.getStatusCode() == HttpStatus.OK) {
-	                System.out.println("Response: " + response.getBody().getMessage());
+	                log.info("Response: " + response.getBody().getMessage());
 	            } else {
-	                System.out.println("Error: " + response.getStatusCode());
+	            	log.error("Error: " + response.getStatusCode());
 	            }
 	        } catch (Exception e) {
-	            System.out.println("Exception occurred: " + e.getMessage());
+	           log.error("Exception occurred: " + e.getMessage());
 	        }		
 	    }
 		progress.setProgressPercentage(percentage);
@@ -69,7 +74,6 @@ public class ProgressService {
 		progress.setUserId(userId);
 		progress.setCourseId(courseId);
 		progress.setProgressPercentage(0.0);
-		//progress.setLastUpdated(new Date().toString());
 		return progress;
 	}
 

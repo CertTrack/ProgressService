@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -18,38 +19,36 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
-
 @Entity
 @Table(name = "progress")
 public class Progress {
 
-
 	@JsonIgnore
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
-    @Column(name = "course_id", nullable = false)
-    private Long courseId;
+	@Column(name = "course_id", nullable = false)
+	private Long courseId;
 
-    @Column(name = "progress_percentage", nullable = false)
-    private Double progressPercentage;
+	@Column(name = "progress_percentage", nullable = false)
+	private Double progressPercentage;
 
-    @Column(name = "last_updated", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private String lastUpdated;
+	@Column(name = "last_updated", nullable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private String lastUpdated;
 
-    @PreUpdate
-    @PrePersist
-    public void onUpdate() throws ParseException {
-    	LocalDateTime dateTime = LocalDateTime.now();
-    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    	System.out.println("on update "+ dateTime.format(formatter));
-    	this.lastUpdated = dateTime.format(formatter); 
-    }
+	@PreUpdate
+	@PrePersist
+	public void onUpdate() throws ParseException {
+		LocalDateTime dateTime = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		System.out.println("on update " + dateTime.format(formatter));
+		this.lastUpdated = dateTime.format(formatter);
+	}
 
 	public Long getId() {
 		return id;
@@ -98,10 +97,30 @@ public class Progress {
 		this.lastUpdated = lastUpdated;
 	}
 
-	public Progress() {	}
+	public Progress() {
+	}
+
 	@Override
 	public String toString() {
 		return "Progress [id=" + id + ", userId=" + userId + ", courseId=" + courseId + ", progressPercentage="
 				+ progressPercentage + ", lastUpdated=" + lastUpdated + "]";
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		Progress progress = (Progress) o;
+		return Objects.equals(userId, progress.userId) && Objects.equals(courseId, progress.courseId)
+				&& Objects.equals(progressPercentage, progress.progressPercentage) && true; // порівняння lastUpdated
+																							// завжди true
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(userId, courseId, progressPercentage, true);
+	}
+
 }
