@@ -46,7 +46,6 @@ public class Progress {
 	public void onUpdate() throws ParseException {
 		LocalDateTime dateTime = LocalDateTime.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-		System.out.println("on update " + dateTime.format(formatter));
 		this.lastUpdated = dateTime.format(formatter);
 	}
 
@@ -105,22 +104,4 @@ public class Progress {
 		return "Progress [id=" + id + ", userId=" + userId + ", courseId=" + courseId + ", progressPercentage="
 				+ progressPercentage + ", lastUpdated=" + lastUpdated + "]";
 	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		Progress progress = (Progress) o;
-		return Objects.equals(userId, progress.userId) && Objects.equals(courseId, progress.courseId)
-				&& Objects.equals(progressPercentage, progress.progressPercentage) && true; // порівняння lastUpdated
-																							// завжди true
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(userId, courseId, progressPercentage, true);
-	}
-
 }
