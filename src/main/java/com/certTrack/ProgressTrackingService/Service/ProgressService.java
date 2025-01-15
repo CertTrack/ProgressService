@@ -1,6 +1,8 @@
 package com.certTrack.ProgressTrackingService.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,6 @@ import com.certTrack.ProgressTrackingService.Entity.Progress;
 import com.certTrack.ProgressTrackingService.Repository.ProgressRepository;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @Service
@@ -32,39 +33,37 @@ public class ProgressService {
 	public void updateProgress(Long userId, Long courseId, int progressPercentage) {
 		Progress progress = progressRepository.findByUserIdAndCourseId(userId, courseId)
 				.orElseGet(() -> createNewProgress(userId, courseId));
-		
-		
-		String query = "SELECT module FROM course WHERE id = ?"; 
+
+		String query = "SELECT module FROM course WHERE id = ?";
 		int modules = jdbcTemplate.queryForObject(query, Integer.class, courseId);
 		double percentage = (progressPercentage / (double) modules) * 100;
-		if(progress.getProgressPercentage()>=percentage) {
+		if (progress.getProgressPercentage() >= percentage) {
 			return;
 		}
-		if(percentage == 100) {
-	        String url = "http://localhost:8085/notification/send?userId={userId}&message={message}&subject={subject}";
-	        String courseName = jdbcTemplate.queryForObject("SELECT name FROM course WHERE id = ?", String.class, courseId);
-	        String message = 
-	        		"Hello, we congratulate you on completing the course "+
-	        		courseName+"!\n"+"You will receive your certificate shortly!";
-	        String subject = "Completion of the "+courseName+" course";
-	        try {
-	            ResponseEntity<ResponseMessage> response = restTemplate.getForEntity(
-	                    url,
-	                    ResponseMessage.class,
-	                    userId,
-	                    message,
-	                    subject
-	            );
-	            
-	            if (response.getStatusCode() == HttpStatus.OK) {
-	                log.info("Response: " + response.getBody().getMessage());
-	            } else {
-	            	log.error("Error: " + response.getStatusCode());
-	            }
-	        } catch (Exception e) {
-	           log.error("Exception occurred: " + e.getMessage());
-	        }		
-	    }
+		if (percentage == 100) {
+			String url = "http://localhost:8085/notification/send?userId={userId}&message={message}&subject={subject}";
+			String courseName = jdbcTemplate.queryForObject("SELECT name FROM course WHERE id = ?", String.class,
+					courseId);
+			String message = "Hello, we congratulate you on completing the course " + courseName + "!\n"
+					+ "You will receive your certificate shortly!";
+			String subject = "Completion of the " + courseName + " course";
+
+			Map<String, String> params = new HashMap<>();
+			params.put("userId", userId + "");
+			params.put("message", message);
+			params.put("subject", subject);
+			try {
+				ResponseEntity<ResponseMessage> response = restTemplate.postForEntity(url, null, ResponseMessage.class,
+						params);
+				if (response.getStatusCode() == HttpStatus.OK) {
+					log.info("Response: " + response.getBody().getMessage());
+				} else {
+					log.error("Error: " + response.getStatusCode());
+				}
+			} catch (Exception e) {
+				log.error("Exception occurred: " + e.getMessage());
+			}
+		}
 		progress.setProgressPercentage(percentage);
 		progressRepository.save(progress);
 	}
@@ -81,6 +80,7 @@ public class ProgressService {
 		Progress progress = progressRepository.findByUserIdAndCourseId(userId, courseId).orElse(null);
 		return progress;
 	}
+
 	public List<Progress> getProgressByUserId(Long userId) {
 		List<Progress> progress = progressRepository.findByUserId(userId);
 		return progress;
@@ -88,7 +88,7 @@ public class ProgressService {
 
 	public ResponseEntity<ResponseMessage> deleteProgress(Long userId, Long courseId) {
 		Optional<Progress> progress = progressRepository.findByUserIdAndCourseId(userId, courseId);
-		if(progress.isPresent()) {
+		if (progress.isPresent()) {
 			progressRepository.delete(progress.get());
 			return ResponseEntity.ok(new ResponseMessage("succesfully deleted progress"));
 		}
