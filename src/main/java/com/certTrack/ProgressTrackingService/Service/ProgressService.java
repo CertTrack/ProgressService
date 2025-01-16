@@ -10,8 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
+import com.certTrack.ProgressTrackingService.Configuration.NotificationProducer;
 import com.certTrack.ProgressTrackingService.DTO.ResponseMessage;
 import com.certTrack.ProgressTrackingService.Entity.Progress;
 import com.certTrack.ProgressTrackingService.Repository.ProgressRepository;
@@ -22,13 +22,16 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ProgressService {
 
-	@Autowired
-	private RestTemplate restTemplate;
+//	@Autowired
+//	private RestTemplate restTemplate;
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
 	private ProgressRepository progressRepository;
+	
+    @Autowired 
+    private NotificationProducer notificationProducer;
 
 	public void updateProgress(Long userId, Long courseId, int progressPercentage) {
 		Progress progress = progressRepository.findByUserIdAndCourseId(userId, courseId)
@@ -41,7 +44,7 @@ public class ProgressService {
 			return;
 		}
 		if (percentage == 100) {
-			String url = "http://localhost:8085/notification/send?userId={userId}&message={message}&subject={subject}";
+			//String url = "http://localhost:8085/notification/send?userId={userId}&message={message}&subject={subject}";
 			String courseName = jdbcTemplate.queryForObject("SELECT name FROM course WHERE id = ?", String.class,
 					courseId);
 			String message = "Hello, we congratulate you on completing the course " + courseName + "!\n"
@@ -52,7 +55,7 @@ public class ProgressService {
 			params.put("userId", userId + "");
 			params.put("message", message);
 			params.put("subject", subject);
-			try {
+			/*try {
 				ResponseEntity<ResponseMessage> response = restTemplate.postForEntity(url, null, ResponseMessage.class,
 						params);
 				if (response.getStatusCode() == HttpStatus.OK) {
@@ -62,7 +65,8 @@ public class ProgressService {
 				}
 			} catch (Exception e) {
 				log.error("Exception occurred: " + e.getMessage());
-			}
+			}*/
+			notificationProducer.sendNotification(params);
 		}
 		progress.setProgressPercentage(percentage);
 		progressRepository.save(progress);
