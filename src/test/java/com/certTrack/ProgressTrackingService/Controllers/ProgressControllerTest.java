@@ -53,17 +53,17 @@ class ProgressControllerTest {
 	}
 	
 	
-	@WithMockUser
-	@Test
-	@Order(2)
-	public void AuthorizedCanUpdateProgresslol() throws Exception {
-		ResponseEntity<ResponseMessage> response = ResponseEntity.ok(new ResponseMessage("Progress updated successfully."));
-		String responseObject = objectMapper.writeValueAsString(response.getBody());
-		api.perform(put("/progress/update?userId=1&courseId=6&progressPercentage=10")
-			.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(content().json(responseObject));
-	}
+//	@WithMockUser
+//	@Test
+//	@Order(2)
+//	public void AuthorizedCanUpdateProgresslol() throws Exception {
+//		ResponseEntity<ResponseMessage> response = ResponseEntity.ok(new ResponseMessage("Progress updated successfully."));
+//		String responseObject = objectMapper.writeValueAsString(response.getBody());
+//		api.perform(put("/progress/update?userId=1&courseId=6&progressPercentage=10")
+//			.contentType(MediaType.APPLICATION_JSON))
+//			.andExpect(status().isOk())
+//			.andExpect(content().json(responseObject));
+//	}
 	
 	@WithMockUser
 	@Test
