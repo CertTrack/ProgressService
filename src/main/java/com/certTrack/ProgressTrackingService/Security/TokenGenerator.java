@@ -1,6 +1,10 @@
 package com.certTrack.ProgressTrackingService.Security;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,13 +18,12 @@ public class TokenGenerator {
     private JWTProperties jwtProperties;
 
     public String generateServiceToken(int userId) {
-        Algorithm algorithm = Algorithm.HMAC256(jwtProperties.getSecretKey());
         return JWT.create()
                 .withSubject(userId+"")
-                .withClaim("roles", "ROLE_SERVICE")
-                .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 3600 * 1000)) // 1 година
-                .sign(algorithm);
+				.withClaim("e", "dima6836753@gmail.com")
+				.withClaim("a", List.of("ROLE_SERVICE"))
+                .sign(Algorithm.HMAC256(jwtProperties.getSecretKey()));
     }
 }
 

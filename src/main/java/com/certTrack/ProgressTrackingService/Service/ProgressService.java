@@ -38,10 +38,26 @@ public class ProgressService {
 
 	@Autowired
 	private NotificationProducer notificationProducer;
-	
+
 	@Autowired
 	TokenGenerator tokenGenerator;
-	
+
+	/**
+	 * Updates the progress of a user in a specific course and handles certification and notification processes.
+	 *
+	 * @param userId             the ID of the user
+	 * @param courseId           the ID of the course
+	 * @param progressPercentage the percentage of progress made by the user
+	 * <p>
+	 * This method retrieves or creates the user's progress in the specified course. It then calculates the new 
+	 * progress percentage and updates it if it is greater than the current percentage. If the progress reaches 100%, 
+	 * the method saves the certification and sends an email notification to the user.
+	 * 
+	 * Important: The parameter 'type' in the notification parameters map is used to determine the notification type:
+	 * - If type = 1: It indicates a completion notification.
+	 * - If type = 2: It indicates a different type of notification (e.g., progress update).
+	 * </p>
+	 */
 	public void updateProgress(Long userId, Long courseId, int progressPercentage) {
 		Progress progress = progressRepository.findByUserIdAndCourseId(userId, courseId)
 				.orElseGet(() -> createNewProgress(userId, courseId));
@@ -56,32 +72,29 @@ public class ProgressService {
 			// save certification
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
-			String token = tokenGenerator.generateServiceToken(Integer.valueOf(userId+""));
-			headers.setBearerAuth(token);  // Додаємо токен
+			String token = tokenGenerator.generateServiceToken(Integer.valueOf(userId + ""));
+			System.out.println(token);
+			headers.setBearerAuth(token);
 
 			HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
 			String url = "http://localhost:8083/certifications/upload?userId={userId}&courseId={courseId}";
-			ResponseEntity<ResponseMessage> response = restTemplate.exchange(
-			    url, HttpMethod.POST, entity, ResponseMessage.class, userId, courseId
-			);
+			ResponseEntity<ResponseMessage> response = restTemplate.exchange(url, HttpMethod.POST, entity,
+					ResponseMessage.class, userId, courseId);
 			if (response.getStatusCode() == HttpStatus.OK) {
-			    log.info("Response: " + response.getBody().getMessage());
+				log.info("Response: " + response.getBody().getMessage());
 			} else {
-			    log.error("Error: " + response.getStatusCode());
-			}			
-			
+				log.error("Error: " + response.getStatusCode());
+			}
+
 			// send email notification
-			String courseName = jdbcTemplate.queryForObject("SELECT name FROM course WHERE id = ?", String.class,
-					courseId);
-			String message = "Hello, we congratulate you on completing the course " + courseName + "!\n"
-					+ "You will receive your certificate shortly!";
-			String subject = "Completion of the " + courseName + " course";
 
 			Map<String, String> params = new HashMap<>();
 			params.put("userId", userId + "");
-			params.put("message", message);
-			params.put("subject", subject);
+			params.put("courseId", courseId + "");
+			params.put("type", "1");
+			// params.put("message", message);
+			// params.put("subject", subject);
 			/*
 			 * try { ResponseEntity<ResponseMessage> response =
 			 * restTemplate.postForEntity(url, null, ResponseMessage.class, params); if
