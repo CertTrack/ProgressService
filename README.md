@@ -1,6 +1,6 @@
 # Progress Service Documentation
 
-The Progress Service is responsible for tracking and managing users' progress in courses. It allows users to update their progress, retrieve progress data, and receive notifications upon course completion.
+The Progress Service is responsible for tracking and managing users' progress in courses. It allows users to update their progress, retrieve progress data, and receive notifications upon course completion. After completing course service send request to certification service for creating certificate and then send messageby kafka to notification service for sending email.
 
 The service is built using Spring Boot and integrates with other services through Kafka for notifications. It also interacts with a database to store and retrieve progress information.
 
