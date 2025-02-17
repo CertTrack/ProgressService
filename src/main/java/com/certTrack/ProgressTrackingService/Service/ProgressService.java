@@ -61,9 +61,8 @@ public class ProgressService {
 	public void updateProgress(Long userId, Long courseId, int progressPercentage) {
 		Progress progress = progressRepository.findByUserIdAndCourseId(userId, courseId)
 				.orElseGet(() -> createNewProgress(userId, courseId));
-
-		String query = "SELECT module FROM course WHERE id = ?";
-		int modules = jdbcTemplate.queryForObject(query, Integer.class, courseId);
+		String urlForNumberModules = "http://localhost:8082/courses/countModules?id="+courseId;
+		int modules = restTemplate.getForObject(urlForNumberModules, Integer.class);//jdbcTemplate.queryForObject(query, Integer.class, courseId);
 		double percentage = (progressPercentage / (double) modules) * 100;
 		if (progress.getProgressPercentage() >= percentage) {
 			return;
@@ -73,7 +72,6 @@ public class ProgressService {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			String token = tokenGenerator.generateServiceToken(Integer.valueOf(userId + ""));
-			System.out.println(token);
 			headers.setBearerAuth(token);
 
 			HttpEntity<String> entity = new HttpEntity<>(null, headers);

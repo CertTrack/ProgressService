@@ -71,12 +71,11 @@ class ProgressControllerTest {
 	public void AuthorizedCanUpdateProgress() throws Exception {
 		ResponseEntity<ResponseMessage> response = ResponseEntity.ok(new ResponseMessage("Progress updated successfully."));
 		String responseObject = objectMapper.writeValueAsString(response.getBody());
-		api.perform(put("/progress/update?userId=1&courseId=7&progressPercentage=10")
+		api.perform(put("/progress/update?userId=1&courseId=4&progressPercentage=1")
 			.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(content().json(responseObject));
 	}
-	
 	
 	
 	@WithMockUser
@@ -84,9 +83,9 @@ class ProgressControllerTest {
 	@Order(4)
 	public void AuthorizedCanSeeProgress() throws Exception {
 		
-		Progress progress = new Progress(1L, 7L, 100.0, lastUpdated);
+		Progress progress = new Progress(1L, 1L, 100.0, "2025-02-09 17:31");
 		String responseObject = objectMapper.writeValueAsString(progress);
-		api.perform(get("/progress/get?userId=1&courseId=7")
+		api.perform(get("/progress/get?userId=1&courseId=1")
 			.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(content().json(responseObject));
