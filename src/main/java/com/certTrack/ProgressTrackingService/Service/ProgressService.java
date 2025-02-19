@@ -103,6 +103,14 @@ public class ProgressService {
 			 */
 			notificationProducer.sendNotification(params);
 		}
+		//send notification of starting the course
+		if (percentage == 100/modules) {
+			Map<String, String> params = new HashMap<>();
+			params.put("userId", userId + "");
+			params.put("courseId", courseId + "");
+			params.put("type", "2");
+			notificationProducer.sendNotification(params);
+		}
 		progress.setProgressPercentage(percentage);
 		progressRepository.save(progress);
 	}
